@@ -1,0 +1,27 @@
+\ Model Setup Generator_copy
+\ LP format - for model browsing. Use MPS format to capture full model detail.
+Maximize
+  + 301.83 Constant
+Subject To
+ Bombs[1]: Grid[0,1,11] + Grid[1,1,11] + Grid[2,1,11] >= 2
+ Bombs[3]: Grid[0,3,11] + Grid[1,3,11] + Grid[2,3,11] >= 2
+ Bombs[4]: Grid[0,4,11] + Grid[1,4,11] + Grid[2,4,11] >= 2
+ Bombs[5]: Grid[0,5,11] + Grid[1,5,11] + Grid[2,5,11] >= 2
+ Bombs: Grid[0,0,11] + Grid[0,1,11] + Grid[0,2,11] + Grid[0,3,11]
+   + Grid[0,4,11] + Grid[0,5,11] + Grid[0,6,11] + Grid[0,7,11]
+   + Grid[0,8,11] + Grid[0,9,11] + Grid[1,0,11] + Grid[1,1,11]
+   + Grid[1,2,11] + Grid[1,3,11] + Grid[1,4,11] + Grid[1,5,11]
+   + Grid[1,6,11] + Grid[1,7,11] + Grid[1,8,11] + Grid[1,9,11]
+   + Grid[2,0,11] + Grid[2,1,11] + Grid[2,2,11] + Grid[2,3,11]
+   + Grid[2,4,11] + Grid[2,5,11] + Grid[2,6,11] + Grid[2,7,11]
+   + Grid[2,8,11] + Grid[2,9,11] = 6
+Bounds
+ Constant = 1
+Binaries
+ Grid[0,0,11] Grid[0,1,11] Grid[0,2,11] Grid[0,3,11] Grid[0,4,11]
+ Grid[0,5,11] Grid[0,6,11] Grid[0,7,11] Grid[0,8,11] Grid[0,9,11]
+ Grid[1,0,11] Grid[1,1,11] Grid[1,2,11] Grid[1,3,11] Grid[1,4,11]
+ Grid[1,5,11] Grid[1,6,11] Grid[1,7,11] Grid[1,8,11] Grid[1,9,11]
+ Grid[2,0,11] Grid[2,1,11] Grid[2,2,11] Grid[2,3,11] Grid[2,4,11]
+ Grid[2,5,11] Grid[2,6,11] Grid[2,7,11] Grid[2,8,11] Grid[2,9,11]
+End
