@@ -51,14 +51,15 @@ class AI_Player():
         self.myboardsred=[]
         self.myboardsblue=[]
         self.pieceident=TwoWayDict()
-        self.she=[] #specific hidden enemies
         if self.color == 'red':
             self.othercolor = 'blue'
         elif self.color == 'blue':
             self.othercolor = 'red'
         self.scoreline = 0
-        self.allyrankvalues
-        self.enemyrankvalues
+        self.allyrankvalues = dict()
+        self.enemyrankvalues = dict()
+        self.alliedhidden = dict()
+        self.enemyhidden = dict()
             
     def initializepiecelist(self,piecelist,board): #construct initial two way dict
         #put first board into board list
@@ -90,15 +91,15 @@ class AI_Player():
         rankdifffactor=1.45
         for i in range(12):
             basevalue[str(i)]= 0.0
-        basevalue[str(1)] = .02
+        basevalue[str(1)] = .05
         for i in range(2,11):
-            if (self.totalAllies[str(i-1)]+self.totalAllies[str(i)] > 0)  AND (self.totalEnemies[str(i-1)]+self.totalEnemies[str(i)]>0):
+            if (self.totalAllies[str(i-1)]+self.totalAllies[str(i)] > 0)  and (self.totalEnemies[str(i-1)]+self.totalEnemies[str(i)]>0):
                 basevalue[str(i)] = basevalue[str(i-1)]*rankdifffactor
             else:
                 basevalue[str(i)] = basevalue[str(i-1)]
         
         #gets the highest value of basevalue for scaling
-        highest = max(basevalue.iterkeys(), key=(lambda key: basevalue[key]))
+        highest = max(basevalue.values())
         #scale all the values and then add a value
         for i in range(11):
             basevalue[str(i)] = float(basevalue[str(i)])/float(highest)+(.5/sum(basevalue.itervalues()))
@@ -108,7 +109,8 @@ class AI_Player():
         if self.totalEnemies[str(1)] != 0:
             basevalue[str(10)] = basevalue[str(10)]*.8
             
-        highest = max(basevalue.iterkeys(), key=(lambda key: basevalue[key]))        
+        #highest = max(basevalue.itervalues(), key=(lambda key: basevalue[key]))  
+        highest = max(basevalue.values())
         basevalue[str(1)] = basevalue[str(10)]/2
         basevalue[str(0)] = highest+.5
         basevalue[str(11)] = highest/2
@@ -193,8 +195,12 @@ class AI_Player():
             except IndexError:
                 gg=2
         
-        self.allyrankvalues = rank_value_calc(self,self.totalAllies,self.totalEnemies)
-        self.enemyrankvalues = rank_value_calc(self,self.totalEnemies,self.totalAllies) #reverse it for the enemy calculations
+        self.allyrankvalues = self.rank_value_calc(self.totalAllies,self.totalEnemies)
+        self.enemyrankvalues = self.rank_value_calc(self.totalEnemies,self.totalAllies)
+        
+        print self.allyrankvalues
+        print self.enemyrankvalues
+        #reverse it for the enemy calculations
         #create a function that does the following:
         #updates the enemy or allied piece lists from the last move
         
@@ -203,5 +209,7 @@ class AI_Player():
         move = sys_random.choice(board_version_moves)
             
         return move
+    
+    #output turn count and board to a text file
         
     

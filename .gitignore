@@ -1,0 +1,8 @@
+*.txt
+*.log
+*.cfg
+untitled*.py
+AI.py
+backups/*
+Database/*
+optimizedsetups/*
