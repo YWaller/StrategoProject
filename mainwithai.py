@@ -1,9 +1,11 @@
-import ConfigParser
+# -*- coding: utf-8 -*-
+import configparser
 import sys, time, pygame
 from pygame.locals import *
 import random
 import re
 from SAI import AI_Player
+
 
 #This code is used for reversing the coordinate lists down below so that x and y are in their proper places  
 def sublistreverse(L):
@@ -35,8 +37,8 @@ def next_turn(turn):
     
 def load_image(filename, transparent=False):
     try: image = pygame.image.load(filename)
-    except pygame.error, message:
-            raise SystemExit, message
+    except pygame.error as message:
+            raise SystemExit(message)
     #image = image.convert()
     if transparent:
             color = image.get_at((0,0))
@@ -124,10 +126,10 @@ def do_move_ai(move): #Allows the AI to manipulate the board
                 if int(rank) == move[2].level:
                     p = i
                     q = j
-                    print "found it!"
+                    print("found it!"
     '''
     #print board[p][q]
-    #print "compare"
+    #print("compare"
     #print board[casy(move[2].rect.centery)-1][casx(move[2].rect.centerx)]
 
     board[casy(move[2].rect.centery)-1][casx(move[2].rect.centerx)]='-1' #remove the unit from its old position
@@ -135,57 +137,64 @@ def do_move_ai(move): #Allows the AI to manipulate the board
     move[2].rect.centerx = coordx(move[1])
     move[2].rect.centery = coordy(move[0])
     updoot = str(move[2].level)+move[2].team[0]
-    #print "second pair"
+    #print("second pair"
     #print board[move[0]-1][move[1]]
     board[move[0]-1][move[1]]=updoot #put the unit in its new board position so the computer knows
     #print board[move[0]-1][move[1]]
-    #print "new oh boy"
+    #print("new oh boy"
         
 def do_attack_ai(move,attacked):
     global flagcap
     global loserteam
     global board
     attacker=move[2]
+    
     # spy
     if attacked.level == 10 and attacker.level == 1:
         #do_move_ai(move)
         destroy_unit(attacked)
-        print "spy wins"
+        print("spy wins")
         updoot = str(move[2].level)+move[2].team[0]
         board[move[0]-1][move[1]]=updoot
-        board[attacked[0]-1][attacked[1]]='-1'        
+        attacker.rect.centerx = coordx(move[1])
+        attacker.rect.centery = coordy(move[0])
+        board[casy(attacked.rect.centery)-1][casx(attacked.rect.centerx)]='-1'        
         return 1
     # miner
     if attacked.level == 11 and attacker.level == 3:
         #do_move_ai(move)
-        print "miner wins"
+        print("miner wins")
         updoot = str(move[2].level)+move[2].team[0]
         board[move[0]-1][move[1]]=updoot
-        board[attacked[0]-1][attacked[1]]='-1'         
+        attacker.rect.centerx = coordx(move[1])
+        attacker.rect.centery = coordy(move[0])
+        board[casy(attacked.rect.centery)-1][casx(attacked.rect.centerx)] = '-1'         
         destroy_unit(attacked)
         return 1
     elif attacked.level < attacker.level:
         #do_move_ai(move)
-        print "attacker wins"
+        print("attacker wins")
         destroy_unit(attacked)
         updoot = str(move[2].level)+move[2].team[0]
         board[move[0]-1][move[1]]=updoot
-        board[attacked[0]-1][attacked[1]]='-1'
+        attacker.rect.centerx = coordx(move[1])
+        attacker.rect.centery = coordy(move[0])
+        board[casy(attacked.rect.centery)-1][casx(attacked.rect.centerx)] = '-1'
         if attacked.level == 0:
             flagcap = True
             loserteam = attacked.team
         return 1
     elif attacked.level > attacker.level:
-        print "defender wins"
+        print("defender wins")
         destroy_unit(attacker)
         board[move[0]-1][move[1]]='-1'
         return -1
     elif attacked.level == attacker.level:
-        print "tie"
+        print("tie")
         destroy_unit(attacker)
         destroy_unit(attacked)
         board[move[0]-1][move[1]]='-1'
-        board[attacked[0]-1][attacked[1]]='-1'
+        board[casy(attacked.rect.centery)-1][casx(attacked.rect.centerx)] = '-1'
         return 0    
     
 def do_attack(attacked):
@@ -201,7 +210,7 @@ def do_attack(attacked):
         board[casy(attacker.rect.centery)-1][casx(attacker.rect.centerx)]='-1'
         board[casy(attacked.rect.centery)-1][casx(attacked.rect.centerx)]=updoot  
         destroy_unit(attacked)
-        print "spy wins"
+        print("spy wins")
         return 1
     # miner
     if attacked.level == 11 and attacker.level == 3:
@@ -209,7 +218,7 @@ def do_attack(attacked):
         updoot=board[casy(attacker.rect.centery)-1][casx(attacker.rect.centerx)]
         board[casy(attacker.rect.centery)-1][casx(attacker.rect.centerx)]='-1'
         board[casy(attacked.rect.centery)-1][casx(attacked.rect.centerx)]=updoot 
-        print "miner wins"
+        print("miner wins")
         destroy_unit(attacked)
         return 1
     elif attacked.level < attacker.level:
@@ -217,18 +226,18 @@ def do_attack(attacked):
         updoot=board[casy(attacker.rect.centery)-1][casx(attacker.rect.centerx)]
         board[casy(attacker.rect.centery)-1][casx(attacker.rect.centerx)]='-1'
         board[casy(attacked.rect.centery)-1][casx(attacked.rect.centerx)]=updoot
-        print "attacker wins"
+        print("attacker wins")
         destroy_unit(attacked)
         if attacked.level == 0:
             flagcap = True
             loserteam = attacked.team
         return 1
     elif attacked.level > attacker.level:
-        print "defender wins"
+        print("defender wins")
         destroy_unit(attacker)
         return -1
     elif attacked.level == attacker.level:
-        print "tie"
+        print("tie")
         destroy_unit(attacker)
         destroy_unit(attacked)
         return 0
@@ -242,12 +251,12 @@ def check_win():
     text = Text()
     if flagcap:
         if loserteam == 'blue':
-            print "Red wins by flag"
+            print("Red wins by flag")
             text.render(screen, "red wins", (255,0,0), (10, 10))
             pygame.display.flip()            
             return True
         elif loserteam == 'red':
-            print "Blue wins by flag"
+            print("Blue wins by flag")
             text.render(screen, "blue wins", (0,0,255), (10, 10))
             pygame.display.flip()            
             return True
@@ -274,23 +283,23 @@ def check_win():
     if red and blue:
         return False
     elif red and not blue:
-        print "red wins by no moves"
+        print("red wins by no moves")
         text.render(screen, "red wins", (255,0,0), (10, 10))
         pygame.display.flip()
         return True
     elif blue and not red:
-        print "blue wins by no moves"
+        print("blue wins by no moves")
         text.render(screen, "blue wins",  (0,0,255), (10, 10))
         pygame.display.flip()
         return True
     else:
-        print "tie"
+        print("tie")
         text.render(screen, "tie",  (255,0,0), (10, 10))
         pygame.display.flip()
         return True
 
 def do_end():
-    print board
+    print(board)
     time.sleep(3)
     pygame.display.quit()
     pygame.quit()
@@ -469,20 +478,20 @@ def turn_logic(color):
             unit = check_unit(mousepos)
             move = check_move(mousepos)
             # if there are other units on this team, deselect them
-            print othercolor
-            print turn
+            print(othercolor)
+            print(turn)
             if unit and (unit.team == "%s" % color):
                 shadow_points = unit.sel(turn)
                 # if selected, show movement options
                 if unit.selected:
-                    print "selected unit"
+                    print("selected unit")
                 else:
-                    print "unit deselected"
+                    print("unit deselected")
             elif move:
-                print "move initiated"
+                print("move initiated")
                 # if no one is in the box, move there
                 if not unit:
-                    print "actually moved"
+                    print("actually moved")
                     do_move(mousepos)
                     if color == 'blue':
                         human_move = list((move,choose_selected()))                       
@@ -493,15 +502,15 @@ def turn_logic(color):
                     turn = next_turn(turn)
                 # if an enemy unit is there, run attack logic
                 else:
-                    print "attack"
+                    print("attack")
                     do_attack(unit)
                     turn = next_turn(turn)
             else:
-                print "nothing was done"
-                print move     
+                print("nothing was done")
+                print(move)    
     else:
         #random player... for now
-        print "%s is an AI, on your toes" % color
+        print("%s is an AI, on your toes" % color)
         turncount += 1
         
         check_all_moves(color,othercolor)
@@ -519,10 +528,10 @@ def turn_logic(color):
         
         if color == 'blue':
             BlueBot.board = board
-            ai_move = BlueBot.read_in_go(board_version_moves,turncount,previous_move_red[-1],board)
+            ai_move = BlueBot.read_in_go(board_version_moves,turncount,previous_move_red[-1],board,piecelist)
         elif color == 'red':
             RedBot.board = board    
-            ai_move = RedBot.read_in_go(board_version_moves,turncount,previous_move_blue[-1],board)   
+            ai_move = RedBot.read_in_go(board_version_moves,turncount,previous_move_blue[-1],board,piecelist)   
         
         #ai_move = sys_random.choice(all_moves)
         #ai_move = [coordx(ai_move[0]),coordy(ai_move[1]),ai_move[2]]
@@ -772,7 +781,7 @@ class Text:
         self.size = FontSize
 
     def render(self, surface, text, color, pos):
-        text = unicode(text, "UTF-8")
+        text = text
         x, y = pos
         for i in text.split("\r"):
             surface.blit(self.font.render(i, 1, color), (x, y))
@@ -804,9 +813,9 @@ board = [['-1' for x in range(h)] for y in range(w)]
 #thefile.close()
 
 # read the configuration file
-conf = ConfigParser.ConfigParser()
+conf = configparser.ConfigParser()
 if not conf.read(["conf.cfg"]):
-    print "Couldn't find the config file, which is an impressive fuck up, all things considered."
+    print("Couldn't find the config file, which is an impressive fuck up, all things considered.")
     
 x_res = int(conf.get("general","width"))
 y_res = int(conf.get("general","height"))
@@ -836,7 +845,7 @@ turn_text = Text()
 
 if __name__ == "__main__":
     pygame.init()
-    pygame.display.set_caption("Test")
+    pygame.display.set_caption("Test, now in three flavors")
     text = Text()
     #Setup logic
     
@@ -848,20 +857,20 @@ if __name__ == "__main__":
     if makesetups:
         if turn:
             #Blue setup
-            setupmap = file(conf.get("resources","bluesetup"))
+            setupmap = open(conf.get("resources","bluesetup"))
             pieces_map = setupmap.readlines()
             initializesetup(pieces_map)   
             
         else: 
             #red setup
-            setupmap = file(conf.get("resources","redsetup"))
+            setupmap = open(conf.get("resources","redsetup"))
             pieces_map = setupmap.readlines()
             initializesetup(pieces_map)
     
     # load them in a list
     else:
         piecelist = list()
-        fmap = file(conf.get("resources","default_map"))
+        fmap = open(conf.get("resources","default_map"))
         pieces_map = fmap.readlines()
         initializesetup(pieces_map)
     
@@ -872,6 +881,8 @@ if __name__ == "__main__":
         event = pygame.event.poll()
         if event.type == pygame.QUIT:
             RUNNING = False
+            pygame.display.quit()
+            pygame.quit()
 
         #check if the player in charge of the current turn is an AI and if not, let the human do their thing
         if turn:
@@ -888,7 +899,7 @@ if __name__ == "__main__":
         draw_frame()      
         # check if the game is over, code is shitty currently
         if check_win():
-            print "we made it here 3"
+            print("we made it here 3")
             do_end()
                 
 #pygame.quit()
