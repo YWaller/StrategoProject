@@ -14,7 +14,7 @@ To run the game, you of course need all the files here. Open up mainwithai.py an
 As you've read, mainwithai is how you start the game. That file contains the actual game engine, written with pygame. It handles all the movement and such.
 The next important file is SAI.py. This file contains the AI class. 
 The meat and potatoes of the AI is done in getboards.py. This file contains the code for the tree search algorithm, and is where the neural network scores various boards.
-The images, setups, etc. are all generally in the resources file.
+The images, setups, etc. are all generally in the resources file. Of particular note is default.map. Open this in notepad++ and you'll see the default setups the game currently uses for testing. sandbox.py contains the code to make a new one.
 
 Other included files are the build_setups.py, which makes use of the gurobi optimizer to find setups that meet criteria for say, defensiveness of a setup.
 neuralstrategoALL is my convolutional neural network trained on six million boards, and who won that game. The file strategoneural is included, and this shows the architecture of that cnn. 
