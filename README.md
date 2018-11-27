@@ -34,6 +34,8 @@ Things of high priority are:
 
 1a. Connecting the current setup code to the game itself. Some hooks and logic are built into mainwithai, but are unused right now.
 
+1b. Making the setup builder more powerful; being able to automatically build a "fortress" for the flag and the like.
+
 2. Speeding up the tree search. This is the most important, in my mind. 
 
 3. Programming some domain knowledge into the AI. I've started this with terminal state counts, but if you know a lot about stratego, then I could really use your help in determining which moves are the most useful from a programmatic standpoint, instead of just the neural network. I'd like a hybrid system eventually. 
