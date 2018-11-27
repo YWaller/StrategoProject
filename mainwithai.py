@@ -153,7 +153,7 @@ def do_attack_ai(move,attacked):
     if attacked.level == 10 and attacker.level == 1:
         #do_move_ai(move)
         destroy_unit(attacked)
-        print("spy wins")
+        print("spy wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         updoot = str(move[2].level)+move[2].team[0]
         board[move[0]-1][move[1]]=updoot
         attacker.rect.centerx = coordx(move[1])
@@ -163,7 +163,7 @@ def do_attack_ai(move,attacked):
     # miner
     if attacked.level == 11 and attacker.level == 3:
         #do_move_ai(move)
-        print("miner wins")
+        print("miner wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         updoot = str(move[2].level)+move[2].team[0]
         board[move[0]-1][move[1]]=updoot
         attacker.rect.centerx = coordx(move[1])
@@ -173,7 +173,7 @@ def do_attack_ai(move,attacked):
         return 1
     elif attacked.level < attacker.level:
         #do_move_ai(move)
-        print("attacker wins")
+        print("attacker wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         destroy_unit(attacked)
         updoot = str(move[2].level)+move[2].team[0]
         board[move[0]-1][move[1]]=updoot
@@ -185,12 +185,12 @@ def do_attack_ai(move,attacked):
             loserteam = attacked.team
         return 1
     elif attacked.level > attacker.level:
-        print("defender wins")
+        print("defender wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         destroy_unit(attacker)
         board[move[0]-1][move[1]]='-1'
         return -1
     elif attacked.level == attacker.level:
-        print("tie")
+        print("tie; attacked: ",attacked.level,"  attacker: ",attacker.level)
         destroy_unit(attacker)
         destroy_unit(attacked)
         board[move[0]-1][move[1]]='-1'
