@@ -48,3 +48,5 @@ I've commented things as best I've had time for/cared to, but if you feel someth
 
 About me, I'm 23 years old (as of massive update), I'm a data scientist at some random tech company no one cares about, and I got both my undergrad and master's in data science. I love boardgames, specifically stratego, so this is a great melding of my likes.
 
+IF you'd like to contact me about this, I'm most reachable at ylwaller [at] email.wm.edu
+
