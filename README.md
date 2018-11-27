@@ -38,6 +38,8 @@ Things of high priority are:
 
 3. Programming some domain knowledge into the AI. I've started this with terminal state counts, but if you know a lot about stratego, then I could really use your help in determining which moves are the most useful from a programmatic standpoint, instead of just the neural network. I'd like a hybrid system eventually. 
 
+3a. The AI right now gets to see your pieces. This is cheating per the rules of Stratego :P but honestly I don't really care if it cheats if it plays well. I plan to at some point develop a second neural network, or something else, to predict what pieces you have where, so there is a "non cheating" mode.
+
 4. Cleaning the code up. There's a lot of unnecessary stuff in SAI in particular. 
 
 
