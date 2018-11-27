@@ -19,7 +19,7 @@ The meat and potatoes of the AI is done in getboards.py. This file contains the 
 
 The images, setups, etc. are all generally in the resources file. Of particular note is default.map. Open this in notepad++ and you'll see the default setups the game currently uses for testing. sandbox.py contains the code to make a new one.
 
-Other included files are the build_setups.py, which makes use of the gurobi optimizer to find setups that meet criteria for say, defensiveness of a setup.
+Build_setups.py, which makes use of the gurobi optimizer to find setups that meet criteria for say, defensiveness of a setup, is also included. The last file of note is xmlparse, which I used to build my six million boards from a database of Stratego games.
 
 neuralstrategoALL is my convolutional neural network trained on six million boards, and who won that game. The file strategoneural is included, and this shows the architecture of that cnn. 
 
