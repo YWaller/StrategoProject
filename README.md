@@ -40,7 +40,9 @@ Things of high priority are:
 
 3a. The AI right now gets to see your pieces. This is cheating per the rules of Stratego :P but honestly I don't really care if it cheats if it plays well. I plan to at some point develop a second neural network, or something else, to predict what pieces you have where, so there is a "non cheating" mode.
 
-4. Cleaning the code up. There's a lot of unnecessary stuff in SAI in particular. 
+4. Letting the AI learn more by playing itself, and using the resulting games. 
+
+5. Cleaning the code up. There's a lot of unnecessary stuff in SAI in particular. 
 
 
 # Miscellaneous notes
