@@ -4,7 +4,7 @@ Hello everyone, or more likely the odd person every few months or years!
 If you like Stratego, and know how to code python, I could probably use your help making this better.
 
 Anyways, what it can do right now... you have a full graphical interface, and an AI player to play against.
-The game is functional in that regard. You can also play against two people.
+The game is functional in that regard. You can also play with two people.
 
 
 # How to Run
