@@ -48,7 +48,7 @@ Things of high priority are:
 
 
 # Miscellaneous notes
-If you'd like to hide the opponent's pieces, then there's a line in mainwithai.py that has the switch. I have this feature off right now while I figure things out and do testing. CTRL+F "hidden" and it should be in about line 328, just uncomment out that line, and the same one about 9 lines later also needs to be uncommented.
+If you'd like to hide the opponent's pieces, then there's a line in mainwithai.py that has the switch. I have this feature off right now while I figure things out and do testing. CTRL+F "hidden" and it should be in about line 328, just uncomment out that line, and the same one about 9 lines later also needs to be uncommented. The lines directly after them then need to be commented out. It'll make sense when you see it (I hope).
 
 I've commented things as best I've had time for/cared to, but if you feel something is unclear, then just ask. I'd be more than happy to help explain it.
 
