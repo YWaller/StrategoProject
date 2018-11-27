@@ -33,6 +33,7 @@ Things of high priority are:
 1. Graphical interface for making your own setup, and assigning the enemy a random or pre-generated one.
 
 1a. Connecting the current setup code to the game itself. Some hooks and logic are built into mainwithai, but are unused right now.
+
 2. Speeding up the tree search. This is the most important, in my mind. 
 
 3. Programming some domain knowledge into the AI. I've started this with terminal state counts, but if you know a lot about stratego, then I could really use your help in determining which moves are the most useful from a programmatic standpoint, instead of just the AI. I'd like a hybrid system eventually. 
