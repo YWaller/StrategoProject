@@ -5,6 +5,7 @@ from pygame.locals import *
 import random
 import re
 from SAI import AI_Player
+from SAI import manhattan_dist
 
 
 #This code is used for reversing the coordinate lists down below so that x and y are in their proper places  
@@ -109,28 +110,9 @@ def do_move(mousepos):
     updoot = str(unit.level)+unit.team[0]
     board[casy(unit.rect.centery)-1][casx(unit.rect.centerx)]=updoot #put the unit in its new board position so the computer knows
 
-def do_move_ai(move): #Allows the AI to manipulate the board
+def do_move_ai(move): #Allows the AI to manipulate the board; no hidden toggle because an AI move can't unhide a piece, the human can figure it out for themselves :P
     #unit = piecelist[0]
     global board
-    '''
-    p = -1
-    q = -1
-    EVERYTHING commented out is related to fixing updating the board position. 
-    for i in range(len(board)):
-        for j in range(len(board[i])):
-            if "b" in board[i][j]:
-                inter=re.search('\d+',board[i][j])
-                rank=inter.group()
-                print rank
-                print move[2].level
-                if int(rank) == move[2].level:
-                    p = i
-                    q = j
-                    print("found it!"
-    '''
-    #print board[p][q]
-    #print("compare"
-    #print board[casy(move[2].rect.centery)-1][casx(move[2].rect.centerx)]
 
     board[casy(move[2].rect.centery)-1][casx(move[2].rect.centerx)]='-1' #remove the unit from its old position
     #print board[casy(move[2].rect.centery)-1][casx(move[2].rect.centerx)]    
@@ -142,8 +124,20 @@ def do_move_ai(move): #Allows the AI to manipulate the board
     board[move[0]-1][move[1]]=updoot #put the unit in its new board position so the computer knows
     #print board[move[0]-1][move[1]]
     #print("new oh boy"
+    
+def hiddentoggle(bot,attacked,attacker,move):
+    if attacked == 'none':
+        if attacker.level == 2:
+            if manhattan_dist(move) > 1:
+                bot.hiddenornotdict[attacker.identifier] = 1
+                print("unhidden... woosh")
+    else:
+        bot.hiddenornotdict[attacked.identifier] = 1
+        bot.hiddenornotdict[attacker.identifier] = 1
+        print("unhidden... woosh (two)")
+    
         
-def do_attack_ai(move,attacked):
+def do_attack_ai(bot,move,attacked): 
     global flagcap
     global loserteam
     global board
@@ -152,6 +146,7 @@ def do_attack_ai(move,attacked):
     # spy
     if attacked.level == 10 and attacker.level == 1:
         #do_move_ai(move)
+        hiddentoggle(bot,attacked,attacker,move)
         destroy_unit(attacked)
         print("spy wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         updoot = str(move[2].level)+move[2].team[0]
@@ -162,6 +157,7 @@ def do_attack_ai(move,attacked):
         return 1
     # miner
     if attacked.level == 11 and attacker.level == 3:
+        hiddentoggle(bot,attacked,attacker,move)
         #do_move_ai(move)
         print("miner wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         updoot = str(move[2].level)+move[2].team[0]
@@ -172,6 +168,7 @@ def do_attack_ai(move,attacked):
         destroy_unit(attacked)
         return 1
     elif attacked.level < attacker.level:
+        hiddentoggle(bot,attacked,attacker,move)
         #do_move_ai(move)
         print("attacker wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         destroy_unit(attacked)
@@ -185,11 +182,13 @@ def do_attack_ai(move,attacked):
             loserteam = attacked.team
         return 1
     elif attacked.level > attacker.level:
+        hiddentoggle(bot,attacked,attacker,move)
         print("defender wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         destroy_unit(attacker)
         board[move[0]-1][move[1]]='-1'
         return -1
     elif attacked.level == attacker.level:
+        hiddentoggle(bot,attacked,attacker,move)
         print("tie; attacked: ",attacked.level,"  attacker: ",attacker.level)
         destroy_unit(attacker)
         destroy_unit(attacked)
@@ -197,7 +196,7 @@ def do_attack_ai(move,attacked):
         board[casy(attacked.rect.centery)-1][casx(attacked.rect.centerx)] = '-1'
         return 0    
     
-def do_attack(attacked):
+def do_attack(bot,attacked):
     global flagcap
     global loserteam
     global board
@@ -205,39 +204,44 @@ def do_attack(attacked):
     updoot='x'
     # spy
     if attacked.level == 10 and attacker.level == 1:
+        hiddentoggle(bot,attacked,attacker,((casy(attacker.rect.centery)-1,casx(attacker.rect.centerx)),(casy(attacked.rect.centery)-1,casx(attacked.rect.centerx))))
         do_move((attacked.rect.centerx,attacked.rect.centery))
         updoot=board[casy(attacker.rect.centery)-1][casx(attacker.rect.centerx)]
         board[casy(attacker.rect.centery)-1][casx(attacker.rect.centerx)]='-1'
         board[casy(attacked.rect.centery)-1][casx(attacked.rect.centerx)]=updoot  
         destroy_unit(attacked)
-        print("spy wins")
+        print("spy wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         return 1
     # miner
     if attacked.level == 11 and attacker.level == 3:
+        hiddentoggle(bot,attacked,attacker,((casy(attacker.rect.centery)-1,casx(attacker.rect.centerx)),(casy(attacked.rect.centery)-1,casx(attacked.rect.centerx))))
         do_move((attacked.rect.centerx,attacked.rect.centery))
         updoot=board[casy(attacker.rect.centery)-1][casx(attacker.rect.centerx)]
         board[casy(attacker.rect.centery)-1][casx(attacker.rect.centerx)]='-1'
         board[casy(attacked.rect.centery)-1][casx(attacked.rect.centerx)]=updoot 
-        print("miner wins")
+        print("miner wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         destroy_unit(attacked)
         return 1
     elif attacked.level < attacker.level:
+        hiddentoggle(bot,attacked,attacker,((casy(attacker.rect.centery)-1,casx(attacker.rect.centerx)),(casy(attacked.rect.centery)-1,casx(attacked.rect.centerx))))
         do_move((attacked.rect.centerx,attacked.rect.centery))
         updoot=board[casy(attacker.rect.centery)-1][casx(attacker.rect.centerx)]
         board[casy(attacker.rect.centery)-1][casx(attacker.rect.centerx)]='-1'
         board[casy(attacked.rect.centery)-1][casx(attacked.rect.centerx)]=updoot
-        print("attacker wins")
+        print("attacker wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         destroy_unit(attacked)
         if attacked.level == 0:
             flagcap = True
             loserteam = attacked.team
         return 1
     elif attacked.level > attacker.level:
-        print("defender wins")
+        hiddentoggle(bot,attacked,attacker,((casy(attacker.rect.centery)-1,casx(attacker.rect.centerx)),(casy(attacked.rect.centery)-1,casx(attacked.rect.centerx))))
+        print("defender wins; attacked: ",attacked.level,"  attacker: ",attacker.level)
         destroy_unit(attacker)
         return -1
     elif attacked.level == attacker.level:
-        print("tie")
+        hiddentoggle(bot,attacked,attacker,((casy(attacker.rect.centery)-1,casx(attacker.rect.centerx)),(casy(attacked.rect.centery)-1,casx(attacked.rect.centerx))))
+        print("tie; attacked: ",attacked.level,"  attacker: ",attacker.level)
         destroy_unit(attacker)
         destroy_unit(attacked)
         return 0
@@ -325,8 +329,8 @@ def draw_frame():
         for piece in piecelist:
             currentteam = 'blue'
             if piece.team != currentteam:
-                #piece.image = load_image("./resources/imgs/red/"+"hidden.png", False)
-                piece.image = load_image("./resources/imgs/red/"+str(piece.level)+".png", False)
+                piece.image = load_image("./resources/imgs/red/"+"hidden.png", False)
+                #piece.image = load_image("./resources/imgs/red/"+str(piece.level)+".png", False)
             else:
                 piece.image = load_image("./resources/imgs/blue/"+str(piece.level)+".png", False)
     else:
@@ -334,15 +338,15 @@ def draw_frame():
         for piece in piecelist:
             currentteam = 'red'
             if piece.team != currentteam:
-                #piece.image = load_image("./resources/imgs/blue/"+"hidden.png", False)
-                piece.image = load_image("./resources/imgs/blue/"+str(piece.level)+".png", False)
+                piece.image = load_image("./resources/imgs/blue/"+"hidden.png", False)
+                #piece.image = load_image("./resources/imgs/blue/"+str(piece.level)+".png", False)
             else:
                 piece.image = load_image("./resources/imgs/red/"+str(piece.level)+".png", False)
         
     pygame.display.flip()
     
 def initializesetup(pieces_map):
-    localcounter = 10
+    localcounter = 0
     #turn optimization_setup into a function and pass it all the weights as inputs
     if makesetups:
         for piece in pieces_map:
@@ -386,10 +390,6 @@ def initializesetup(pieces_map):
                 else:
                     board[i][j] = '-1'
                    
-    if RedPlayer == 'AI': #Give the AI the piecelist
-        RedBot.initializepiecelist(piecelist,board)
-    if BluePlayer == 'AI':
-        BlueBot.initializepiecelist(piecelist,board)
         
 def check_all_moves(color,othercolor):
     global chasecounterred
@@ -405,9 +405,9 @@ def check_all_moves(color,othercolor):
             if piece.show_moves():
                 for sublist in piece.show_moves():
                     try:
-                        if previous_move_red[turncount-2] != (sublist,piece): #can't move between the same place for two consecutive turns
+                        if previous_move[turncount-2] != (sublist,piece): #can't move between the same place for two consecutive turns
                             all_moves.append((sublist,piece))
-                        elif previous_move_blue[turncount-1][0] == previous_move_red[turncount-2][0]: #prevents chasing
+                        elif previous_move[turncount-1][0] == previous_move[turncount-2][0]: #prevents chasing
                             chasecounterblue += 1
                             if chasecounterblue < 7:
                                 all_moves.append((sublist,piece))
@@ -419,11 +419,11 @@ def check_all_moves(color,othercolor):
             if piece.show_moves():
                 for sublist in piece.show_moves():
                     try:
-                        if previous_move_red[turncount-2] != (sublist,piece): #can't move between the same place for two consecutive turns
+                        if previous_move[turncount-2] != (sublist,piece): #can't move between the same place for two consecutive turns
                             all_moves.append((sublist,piece))
-                        elif previous_move_blue[turncount-1][0] == previous_move_red[turncount-2][0]: #prevents chasing
-                            chasecounterblue += 1
-                            if chasecounterblue < 7:
+                        elif previous_move[turncount-1][0] == previous_move[turncount-2][0]: #prevents chasing
+                            chasecounterred += 1
+                            if chasecounterred < 7:
                                 all_moves.append((sublist,piece))
                             else:
                                 chasecounterred = 0
@@ -446,8 +446,7 @@ def turn_logic(color):
     global mouse_down
     global mouse_released
     global mouse_up
-    global previous_move_blue
-    global previous_move_red
+    global previous_move
     global turn
     global chasecounterblue
     global chasecounterred
@@ -456,6 +455,8 @@ def turn_logic(color):
     global board_version_moves
     global endtime
     global board
+    global RedBot
+    global BlueBot
     
     if color == 'blue':
         othercolor = 'red'
@@ -467,7 +468,6 @@ def turn_logic(color):
     if Player == 'Human':
         #human blue player goes
         # update mouse position
-        turncount += 1
         
         check_all_moves(color,othercolor)
         
@@ -480,6 +480,8 @@ def turn_logic(color):
             # if there are other units on this team, deselect them
             print(othercolor)
             print(turn)
+            print(unit)
+            moveunit = choose_selected()
             if unit and (unit.team == "%s" % color):
                 shadow_points = unit.sel(turn)
                 # if selected, show movement options
@@ -489,29 +491,37 @@ def turn_logic(color):
                     print("unit deselected")
             elif move:
                 print("move initiated")
+                print(moveunit,"move unit")
+                print(unit,"unit")
                 # if no one is in the box, move there
                 if not unit:
                     print("actually moved")
-                    do_move(mousepos)
                     if color == 'blue':
-                        human_move = list((move,choose_selected()))                       
-                        previous_move_blue.append(human_move)
+                        hiddentoggle(RedBot,'none',moveunit,((casy(moveunit.rect.centery)-1,casx(moveunit.rect.centerx)),mousepos))
                     if color == 'red':
-                        human_move = list((move,choose_selected()))                      
-                        previous_move_red.append(human_move)            
+                        hiddentoggle(BlueBot,'none',moveunit,((casy(moveunit.rect.centery)-1,casx(moveunit.rect.centerx)),mousepos)) 
+                    do_move(mousepos)
+                    human_move = list((move,choose_selected()))
+                    previous_move.append((casx(human_move[0][0]),casy(human_move[0][1])))
+                    turncount += 1 
                     turn = next_turn(turn)
                 # if an enemy unit is there, run attack logic
                 else:
                     print("attack")
-                    do_attack(unit)
-                    turn = next_turn(turn)
+                    if color == 'blue':
+                        do_attack(RedBot,unit)
+                        turncount += 1 
+                        turn = next_turn(turn)
+                    if color == 'red':
+                        do_attack(BlueBot,unit)
+                        turncount += 1 
+                        turn = next_turn(turn)                        
             else:
                 print("nothing was done")
                 print(move)    
     else:
-        #random player... for now
+        #random player... for now #ha ha, screw you Yale from when I wrote that comment, the AI is now an actual AI player :D
         print("%s is an AI, on your toes" % color)
-        turncount += 1
         
         check_all_moves(color,othercolor)
 
@@ -522,31 +532,32 @@ def turn_logic(color):
            
         if turncount < 2: #fill the 0th slot of the previous move deals with nothing
             if color == 'red':
-                previous_move_blue.append([-1,-1,'okay'])
+                previous_move.append([-1,-1,'okay'])
             if color == 'blue':
-                previous_move_red.append([-1,-1,'okay'])
+                previous_move.append([-1,-1,'okay'])
         
+        print(turncount,"turncount")
         if color == 'blue':
             BlueBot.board = board
-            ai_move = BlueBot.read_in_go(board_version_moves,turncount,previous_move_red[-1],board,piecelist)
+            ai_move = BlueBot.read_in_go(board_version_moves,turncount,previous_move[-1],board,piecelist)
         elif color == 'red':
             RedBot.board = board    
-            ai_move = RedBot.read_in_go(board_version_moves,turncount,previous_move_blue[-1],board,piecelist)   
+            ai_move = RedBot.read_in_go(board_version_moves,turncount,previous_move[-1],board,piecelist)   
         
-        #ai_move = sys_random.choice(all_moves)
-        #ai_move = [coordx(ai_move[0]),coordy(ai_move[1]),ai_move[2]]
-        if color == 'blue':
-            previous_move_blue.append(ai_move)
-        if color == 'red':
-            previous_move_red.append(ai_move)            
+        previous_move.append(ai_move)            
         attackcount = 0
         for piece in piecelist:
             if check_unit_ai((ai_move[1],ai_move[0])) == piece:
                 if piece.team == othercolor:
-                    do_attack_ai(ai_move,piece)              
-                    attackcount = 1
+                    if color == 'blue':
+                        do_attack_ai(BlueBot,ai_move,piece)              
+                        attackcount = 1
+                    elif color == 'red':
+                        do_attack_ai(RedBot,ai_move,piece)              
+                        attackcount = 1                        
         if attackcount == 0:
-            do_move_ai(ai_move)                
+            do_move_ai(ai_move)
+        turncount += 1                
         turn = next_turn(turn)
         endtime = False
     
@@ -562,7 +573,7 @@ class pieceinfo(pygame.sprite.Sprite):
         self.selected = False
         self.identifier = identifier
         
-    #we need to make sure the hashes are unique...    
+    #we need to make sure the hashes are unique    
     def __hash__(self):
         return hash((self.team, self.level, self.identifier))
         
@@ -631,7 +642,7 @@ class pieceinfo(pygame.sprite.Sprite):
             try: #target_index only exists when assigned inside the if loop, so if it does, we know to stop the direction there
                 target_indexa
             except NameError:
-                gg = 1
+                pass
             else:
                 up = up[1:target_indexa]
             counter = 0
@@ -654,7 +665,7 @@ class pieceinfo(pygame.sprite.Sprite):
             try:
                 target_indexb
             except NameError:
-                gg = 1
+                pass
             else:
                 down = down[1:target_indexb]
             counter = 0
@@ -677,7 +688,7 @@ class pieceinfo(pygame.sprite.Sprite):
             try:
                 target_indexc
             except NameError:
-                gg = 1
+                pass
             else:
                 left = left[1:target_indexc]
             counter = 0
@@ -699,7 +710,7 @@ class pieceinfo(pygame.sprite.Sprite):
             try:
                 target_indexd
             except NameError:
-                gg = 1
+                pass
             else:
                 right = right[1:target_indexd]     
                   
@@ -770,9 +781,6 @@ class pieceinfo(pygame.sprite.Sprite):
     def get_data(self):
         return (self.team, self.level)
         
-    def muerto(self):
-        # remove the sprite from the game
-        pass
 
 class Text:
     def __init__(self, FontName = None, FontSize = 30):
@@ -794,8 +802,7 @@ RedPlayer = 'Human'
 makesetups = False
 endtime = False
 
-previous_move_red = []
-previous_move_blue = []
+previous_move = []
 board_version_moves = []
 
 chasecounterred = 0
@@ -849,11 +856,6 @@ if __name__ == "__main__":
     text = Text()
     #Setup logic
     
-    if BluePlayer == 'AI':
-        BlueBot = AI_Player('blue',board) #should've taken the blue pill
-    elif RedPlayer == 'AI':
-        RedBot = AI_Player('blue',board) 
-        
     if makesetups:
         if turn:
             #Blue setup
@@ -873,6 +875,11 @@ if __name__ == "__main__":
         fmap = open(conf.get("resources","default_map"))
         pieces_map = fmap.readlines()
         initializesetup(pieces_map)
+        
+    if BluePlayer == 'AI':
+        BlueBot = AI_Player('blue',board) #should've taken the blue pill
+    elif RedPlayer == 'AI':
+        RedBot = AI_Player('blue',board) 
     
     # game loop
     RUNNING = True

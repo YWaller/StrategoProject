@@ -286,21 +286,36 @@ def do_move(upboard, move): #processes a move on a board
 
     return upboard
 
-def worth_considering(nestedboards): #given some boards, and their scores, return the ones we think this player would actually consider. 
+def worth_considering(nestedboards,recursion_depth,r_d_max = 1): #given some boards, and their scores, return the ones we think this player would actually consider. 
     nested2=[]
     nestedpreds = get_scores(nestedboards)
     nestedboards = error_check_boards(nestedboards)
     considering = [x for (y,x) in sorted(zip(nestedpreds,nestedboards), key = lambda pair: pair[0],reverse=True)] #these two lines get only the top half of the boards available,
     nested2 = considering[:int(len(considering)/2)+1] #which represents the assumption that players won't do something heinously stupid
-    
+    randindices = np.random.choice(len(nested2),int((((1/(((r_d_max+2)/(recursion_depth+1)))))+1)*len(nested2)))
+    if recursion_depth != 1:
+        nested3 = [nested2[i] for i in randindices]
+        #nested2 = considering[:int(len(considering)*(1/(((r_d_max+2)/(recursion_depth+1)))))+1]
+        #print("percentage given: ",1/(((r_d_max+2)/(recursion_depth+1))),r_d_max,recursion_depth)
+    else:
+        nested3 = nested2
+        
     predsforconsidering = [y for (y,x) in sorted(zip(nestedpreds,nestedboards), key = lambda pair: pair[0],reverse=True)]
+
     sendpreds = predsforconsidering[:int(len(predsforconsidering)/2)+1]
+
+    if recursion_depth != 1:
+        sendpreds2 = [sendpreds[i] for i in randindices]
+        #sendpreds = predsforconsidering[:int(len(predsforconsidering)*(1/(((r_d_max+2)/(recursion_depth+1)))))+1]
+    else:
+        sendpreds2 = sendpreds       
     #nested3 = []
     #nested3.append(considering[0])
     #nested3.append(considering[-1]) #in case we just want to use the most and least likely board, for speed
     
-    return [nested2],sendpreds
-
+    #return [nested2],sendpreds
+    return [nested3],sendpreds2
+    
 def get_scores(nestedboards): #passes all the boards to the model and gets the resulting scores.
     #print("get scores")
     scoreboards = []
@@ -378,8 +393,6 @@ def error_check_boards(boardlist): #makes sure that all functions are receiving 
     
     if len(incase[0]) > len(incase) and not len(incase[0]) == 8:
         print("error 4")
-        print(len(incase))
-        print(incase[0])
         incase = incase[0]
     if len(incase[0][0]) == 8 and type(incase[0][0]) == type(typecheck):
         print("error 5")
@@ -392,10 +405,10 @@ def error_check_boards(boardlist): #makes sure that all functions are receiving 
     
 
 
-def node_strength(nestedboards,playernumber,boardstrength): #gets the overall strength of the boards given to it, and updates the boardstrength of the parent
+def node_strength(nestedboards,playernumber,boardstrength,recursion_depth,r_d_max = 1): #gets the overall strength of the boards given to it, and updates the boardstrength of the parent
     nestedboards = flip_boards(playernumber,nestedboards)
     #print(len(nestedboards),"node strength 1")
-    boardfilter, usepreds = worth_considering(nestedboards)
+    boardfilter, usepreds = worth_considering(nestedboards,recursion_depth,r_d_max)
     #print(len(boardfilter),"node strength 2")
     assert len(boardfilter[0]) == len(usepreds)
     #usepreds = get_scores(boardfilter[0])
@@ -410,7 +423,7 @@ def node_strength(nestedboards,playernumber,boardstrength): #gets the overall st
     return (boardstrength, copy(boardfilter))
     
 
-def top_recursion_func(resultboard,playernumber,recursion_depth): #The meat and potatoes of move selection. Uses node_strength, is hooked into by m_s_u and obergruppen. Goes through the boards from the AI's pov and the other player's.
+def top_recursion_func(resultboard,playernumber,recursion_depth,r_d_max = 1): #The meat and potatoes of move selection. Uses node_strength, is hooked into by m_s_u and obergruppen. Goes through the boards from the AI's pov and the other player's.
     boardstrength = 0
     nestedboards = get_all_boards([resultboard])
     nestedboardsalpha = nestedboards[0]
@@ -419,12 +432,12 @@ def top_recursion_func(resultboard,playernumber,recursion_depth): #The meat and 
     recursion_remainder = recursion_depth
     while recursion_remainder > 0:
         print("depth: ",recursion_remainder)
-        container = node_strength(nestedboardsalpha,playernumber,boardstrength)
+        container = node_strength(nestedboardsalpha,playernumber,boardstrength,recursion_remainder,r_d_max)
         boardstrength = container[0] #we don't reassign the boards until AFTER our and our enemy's positions at THESE boards have been counted
         nestedboardsalpha = error_check_boards(nestedboardsalpha)
         #print("passed first")
         playernumber+=1
-        container = node_strength(nestedboardsalpha,playernumber,boardstrength)
+        container = node_strength(nestedboardsalpha,playernumber,boardstrength,recursion_remainder,r_d_max)
         boardstrength, nestedboardsalpha = container[0], container[1]
         #print(len(nestedboardsalpha),"top recur 1")
         #print(nestedboardsalpha[0],"alphazero") #yes I named this this so I could make that joke
@@ -443,11 +456,12 @@ def obergruppen_recurse(strengthlist,move_list,move_value_cutoff,playernumber,re
     for option in move_list:
         if strengthlist[move_list.index(option)] <= move_value_cutoff:
             pass
+            #optioncount+=1
         else:
             print("considering depth: ",round(optioncount/(len(move_list)),2), consider_depth, strengthlist[optioncount])
             moveboard = do_move(copy(starting_board[0]),option)
-            strengthlist[optioncount] = top_recursion_func(copy(moveboard),playernumber,round(recursion_depth/2))
-            optioncount+=1
+            strengthlist[move_list.index(option)] = top_recursion_func(copy(moveboard),playernumber,round(recursion_depth/2),round(recursion_depth/2))
+            #optioncount+=1
     return strengthlist
 
 
@@ -460,7 +474,7 @@ def move_strength_ultimate(starting_board,move_list,recursion_depth): #This is t
     for option in move_list:
         moveboard = do_move(copy(starting_board[0]),option)
         #strengthlist[optioncount] = 0
-        strengthlist[optioncount] = top_recursion_func(moveboard,playernumber,1)
+        strengthlist[optioncount] = top_recursion_func(moveboard,playernumber,1,1)
         print("considering initial depth: ",strengthlist[optioncount])
         optioncount+=1
     
@@ -503,12 +517,15 @@ for i in range(1,12):
     initialvalues.append(round(i/12.0,3))
     
 #            flag   spy   2     3      4      5     6     7      8      9     10    bomb
-ivsattack = [0.0, 0.166, 0.5, 0.333, 0.333, 0.417, 0.5, 0.583, 0.667, 0.75, 0.833, 0.0917]
+ivsattack = [0.0, 0.5, 0.5, 0.333, 0.333, 0.417, 0.5, 0.583, 0.667, 0.75, 0.833, 0.0917]
     
-attack=dict(zip(keys,ivsattack))
 
 #            flag   spy   2     3      4      5     6     7      8      9     10    bomb
 ivsdefense = [0.0, 0.266, 0.18, 0.35, 0.333, 0.357, 0.4, 0.483, 0.567, 0.65, 0.733, 0.917]
+
+
+attack=dict(zip(keys,ivsattack))
+defense=dict(zip(keys,ivsdefense))
 
 def manhattan_dist(move): #order doesn't matter
     a = move[0][0]
@@ -517,15 +534,13 @@ def manhattan_dist(move): #order doesn't matter
     d = move[1][1]
     mandist = abs(a-c)+abs(b-d)
     
-    if (any (abs(a-box[0])+abs(b-box[1])) == mandist for box in no):
-        #calculate go-around logic
-    
     return mandist
 
-defense=dict(zip(keys,ivsdefense))
+
 
 def board_threats(starting_board,move_list):
-'''      
+'''
+     
 
 
        

@@ -1,16 +1,76 @@
 # -*- coding: utf-8 -*-
 import random
 import numpy as np
-#import keras
-#from keras.models import load_model
-from copy import copy
+from copy import copy,deepcopy
 import re
 import getboards
 
-
 sys_random = random.SystemRandom()
-#model = load_model('neuralstrategoALL.h5')
 
+pd = {} #piececonversions
+pd['1b'] = 1
+pd['2b'] = 2
+pd['3b'] = 3
+pd['4b'] = 4
+pd['5b'] = 5
+pd['6b'] = 6
+pd['7b'] = 7
+pd['8b'] = 8
+pd['9b'] = 9
+pd['10b'] = 10
+pd['11b'] = 11
+pd['0b'] = 0
+pd['1'] = -1
+
+pd['1r'] = 21
+pd['2r'] = 22
+pd['3r'] = 23
+pd['4r'] = 24
+pd['5r'] = 25
+pd['6r'] = 26
+pd['7r'] = 27
+pd['8r'] = 28
+pd['9r'] = 29
+pd['10r'] = 30
+pd['0r'] = 20
+pd['11r'] = 31    
+
+ld = {} 
+ld[-1] = -1
+ld[21] = 1
+ld[22] = 2
+ld[23] = 3
+ld[24] = 4
+ld[25] = 5
+ld[26] = 6
+ld[27] = 7
+ld[28] = 8
+ld[29] = 9
+ld[30] = 10
+ld[20] = 0
+ld[31] = 11
+ld[-1] = -1
+ld[1] = 1
+ld[2] = 2
+ld[3] = 3
+ld[4] = 4
+ld[5] = 5
+ld[6] = 6
+ld[7] = 7
+ld[8] = 8
+ld[9] = 9
+ld[10] = 10
+ld[0] = 0
+ld[11] = 11
+
+def manhattan_dist(move): #order doesn't matter
+    a = move[0][0]
+    b = move[0][1]
+    c = move[1][0]
+    d = move[1][1]
+    mandist = abs(a-c)+abs(b-d)  
+    print(mandist,"man dist")
+    return mandist
 
 #functions copied from main with ai as needed:
                
@@ -25,7 +85,7 @@ def casy(y):
         return -1
     else:
         return int((y-50)/50)
-
+    
 class TwoWayDict(dict): #I needed a two way dictionary for my number/board position pairs, so...
     def __setitem__(self, key, value):
         # Remove any previous connections with these values
@@ -47,46 +107,11 @@ class TwoWayDict(dict): #I needed a two way dictionary for my number/board posit
 class AI_Player():
     def __init__(self,color,board):
         self.color = color
-        self.board = board
         self.totalAllies = {'11':6,'10':1,'9':1,'8':1,'7':1,'6':2,'5':2,'4':2,'3':5,'2':7,'1':1,'0':1}
         self.totalEnemies = {'11':6,'10':1,'9':1,'8':1,'7':1,'6':2,'5':2,'4':2,'3':5,'2':7,'1':1,'0':1}
-        self.myboardsred=[]
-        self.myboardsblue=[]
-        self.pieceident=TwoWayDict()
-        if self.color == 'red':
-            self.othercolor = 'blue'
-        elif self.color == 'blue':
-            self.othercolor = 'red'
-        self.scoreline = 0
-        self.allyrankvalues = dict()
-        self.enemyrankvalues = dict()
-        self.alliedhidden = dict()
-        self.enemyhidden = dict()
-        self.allboards = []
-            
-    def initializepiecelist(self,piecelist,board): #construct initial two way dict
-        #put first board into board list
-        self.truepiecelist = dict() #need a way to get actual piece from hash
-        self.uniquecount = 0
-        self.piecelist = piecelist
-        self.enemyhidden = dict()
-        for piece in piecelist:
-            self.truepiecelist[hash(piece)] = piece
-            self.uniquecount -= 1
-                        #Give each enemy unit a unique negative number identifier  
-            self.pieceident[self.uniquecount] = hash(piece)
-            #set the lists of allies and enemies to hidden first
-            self.alliedhidden[self.uniquecount] = 'h'
-            if piece.team != self.color:
-                self.enemyhidden[self.uniquecount] = 'h' 
-            else:
-                self.alliedhidden[self.uniquecount] = 'h'
-
-        self.myboard = self.boardconvert(piecelist,board)    
-        if self.color == 'red':
-            self.myboardsred.append(self.myboard)
-        elif self.color == 'blue':
-            self.myboardsblue.append(self.myboard)  
+        self.hiddenornotdict = dict.fromkeys(range(0, 100), 0) #as pieces are positively identified, we'll change their hidden dict value from 0 to 1
+        self.hiddenornotdict['-1'] = 0
+        self.turncount = 0
 
     def rank_value_calc(self,totalAllies,totalEnemies):
         #Our pieces
@@ -130,122 +155,21 @@ class AI_Player():
         #if its hidden and has moved, make its value 
         
         return basevalue
-                        
-            
-    def boardconvert(self,piecelist,boardd): #convert a board passed from the engine to here
-        #assign the unique identifier to the board position along with the piece 
-        w, h = 8, 10;
-        i_board = [['-1' for x in range(h)] for y in range(w)] #internal function board
-        for x in range(len(boardd)):
-            for y in range(10):
-                for piece in piecelist:
-                    if (x,y) == (casy(piece.rect.centery)-1,casx(piece.rect.centerx)):
-                        i_board[x][y] = boardd[x][y]+"Q"+str(self.pieceident[hash(piece)])                 
-        return i_board
-        
-    #def parsemove(self,boardd,previous_move):
-        #use previous move to determine if the piece is a two        
        
     def read_in_go(self,board_version_moves,turncount,previous_move,board,piecelist):
         #this function houses the main AI logic
         
-        #convert the given board to one the AI can use
-        self.myboard = self.boardconvert(self.piecelist,board)
-        if self.color == 'red':
-            self.myboardsred.append(self.myboard)
-        elif self.color == 'blue':
-            self.myboardsblue.append(self.myboard)                                 
-            
-            #todo: make way to check if unique identifer has been discovered or not, if not, replace board info with -2
-            #bring unique identifier along with piece
-    
-        #count number of friendly pieces, if it went down by one, we lost someone to combat and know who they are
-        #need to implement the logic; find place that's different, and then see what piece is there and such
-        friendlycount = 0
-        if self.color == 'red':   
-            for x in range(len(self.board)):
-                for y in range(10):
-                    if 'r' in self.myboard[x][y]:
-                        friendlycount+=1
-                    if 'r' in self.myboardsred[-1]:
-                        friendlycount+=1
-        elif self.color == 'blue':
-            for x in range(len(self.board)):
-                for y in range(10):
-                    if 'r' in self.myboard[x][y]:
-                        friendlycount+=1
-                    if 'r' in self.myboardsblue[-1]:
-                        friendlycount+=1
-                        
-
-        if self.color == 'red':
-            print(len(self.myboardsblue))
-            try:
-                if self.myboardsblue[-1] == self.myboardsblue[-2]:
-                    print("They are the same, fuck you.")
-                else:
-                    print("they are different.")
-            except IndexError:
-                gg=2
-        
-        elif self.color == 'blue': 
-            print(len(self.myboardsblue))
-            try:
-                if self.myboardsblue[-1] == self.myboardsblue[-2]:
-                    print("They are the same, fuck you.")
-                else:
-                    print("they are different.")
-            except IndexError:
-                gg=2
+        def check_unit_ai(move): #given a board position, finds the matching class object and return its identifier
+            for piece in piecelist:
+                if (move[0],move[1]) == piece.get_pos():
+                    return piece.identifier
+            for piece in piecelist:
+                print(piece.get_pos())
+            print(move,"move")
         
         self.allyrankvalues = self.rank_value_calc(self.totalAllies,self.totalEnemies)
         self.enemyrankvalues = self.rank_value_calc(self.totalEnemies,self.totalAllies)
-        
-        #print(self.allyrankvalues)
-        #print(self.enemyrankvalues)
-        
-        pd = {} #piececonversions
-        pd['1b'] = 1
-        pd['2b'] = 2
-        pd['3b'] = 3
-        pd['4b'] = 4
-        pd['5b'] = 5
-        pd['6b'] = 6
-        pd['7b'] = 7
-        pd['8b'] = 8
-        pd['9b'] = 9
-        pd['10b'] = 10
-        pd['11b'] = 11
-        pd['0b'] = 0
-        pd['1'] = -1
-        
-        pd['1r'] = 21
-        pd['2r'] = 22
-        pd['3r'] = 23
-        pd['4r'] = 24
-        pd['5r'] = 25
-        pd['6r'] = 26
-        pd['7r'] = 27
-        pd['8r'] = 28
-        pd['9r'] = 29
-        pd['10r'] = 30
-        pd['0r'] = 20
-        pd['11r'] = 31    
-        
-        ld = {} 
-        ld[-1] = -1
-        ld[21] = 1
-        ld[22] = 2
-        ld[23] = 3
-        ld[24] = 4
-        ld[25] = 5
-        ld[26] = 6
-        ld[27] = 7
-        ld[28] = 8
-        ld[29] = 9
-        ld[30] = 10
-        ld[20] = 0
-        ld[31] = 11
+        #this board should be numbered 1-60, with -1s filling in the other spaces. It lets us know where each specific piece is.
         
         
         #make initial board...    
@@ -260,86 +184,56 @@ class AI_Player():
             y+=1
         ai_board = ai_board.astype(int)
         
-        '''
-        def update_board(move, ai_board):
-            self.allboards
-            ib = copy(ai_board)
-            if ib[move[0]] == 10 and ld[ib[move[1]]] == 1: #spy
-                ib[move[0]] = ib[move[1]]
-                ib[move[1]] = -1
-            elif ib[move[0]] == 11 and ld[ib[move[1]]] == 3: #miner
-                ib[move[0]] = ib[move[1]]
-                ib[move[1]] = -1
-            elif ib[move[0]] < ld[ib[move[1]]]: #win
-                ib[move[0]] = ib[move[1]]
-                ib[move[1]] = -1    
-            elif ib[move[0]] > ld[ib[move[1]]]: #lose
-                ib[move[1]] = -1
-            elif ib[move[0]] == ld[ib[move[1]]]: #tie
-                ib[move[1]] = -1
-                ib[move[0]] = -1 
-            self.allboards.append(copy(ib))
-        '''
-        #now the board is in its proper form. So now we need to go through the moves and make all the new boards.
-        
-        self.allboards = []
         allmovesforfunc = []
         for option in board_version_moves:
             yps = option[0]-1 #y
             xps = option[1]
             ypt = casy(option[2].rect.centery)-1
             xpt = casx(option[2].rect.centerx)    
-            move = ((ypt,xpt),(yps,xps))
+            move = ((ypt,xpt),(yps,xps)) #MOVE[0] IS SOURCE
             allmovesforfunc.append(move)
-            try:
-                ld[ai_board[move[1]]]
-            except:
-                continue
-            #update_board(move,ai_board)
-
+            
+        #print(self.hiddenornotdict)
+        deletion_indices = []
+        deletioncounter = 0
+        for move in allmovesforfunc: #all of this code is to get the AI to not attack pieces it has learned are larger than whatever the piece its focused on is
+            if self.hiddenornotdict[check_unit_ai((move[0][1],move[0][0]+1))] == 1: #check if the unit is hidden or not                #tuple(reversed(move[0]))
+                if ld[ai_board[move[1]]] > ld[ai_board[move[0]]]: #if the unit at this position is bigger than this piece, remove the move from consideration
+                    #so to make this a "memory" index, pick a random number between 1 and 10; if it's lower than whatever, don't assign the move, and make that piece hidden again
+                    deletion_indices.append(copy(deletioncounter))
+                    print("NOT THAT DUMB")
+            deletioncounter+=1
         
-        '''
-        m1 = np.zeros((1,10)) #empty matrix row
-        m1.fill(-1)
-        m1 = m1.astype(int)
-                       
-        counter = 0    
-        for matrix in self.allboards:
-            matrix = np.asarray(matrix)
-            matrix = matrix.astype(int)
-            matrix = np.vstack((m1,matrix,m1))
-            self.allboards[counter] = copy(matrix)
-            counter+=1
-        '''           
-        
-        #allsamples = np.array(self.allboards)
-        #allsamples = allsamples.reshape(len(allsamples),10,10,1)
-        #preds = model.predict(allsamples)   
-        #preds = preds.tolist()
-        #random.shuffle(preds)
-        #maxmove = board_version_moves[preds.index(max(preds))]
-        
-        #reverse it for the enemy calculations
-        #create a function that does the following:
-        #updates the enemy or allied piece lists from the last move
+        if len(deletion_indices) < len(allmovesforfunc): #prevents us from removing all our valid moves, but it's a bad place to be in if they're all attacking pieces bigger than us...
+            for index in reversed(deletion_indices):
+                print("move deleted: ",allmovesforfunc[index])
+                del allmovesforfunc[index]                    
         
         #for the objective function, sum the number of allied pieces that are hidden and subtract the number of enemy pieces that are
         ai_board = np.asarray(ai_board)
         #[((1,0),(0,0)),((0,1),(0,0))]
-        movestrengths = getboards.move_strength_ultimate([ai_board],allmovesforfunc,10) #current board, move list, recursion_depth
+        self.turncount+=2
+        #if turncount is low, we don't really need to spend too much time on our move. Let's speed things up a bit...
+        recursion_send = 7
+        if self.turncount < 50:
+            recursion_send = 6
+        elif self.turncount < 30:
+            recursion_send = 5
+        elif self.turncount < 10:
+            recursion_send = 4
+        
+        movestrengths = getboards.move_strength_ultimate([ai_board],allmovesforfunc,recursion_send) #current board, move list, recursion_depth; I don't recommend values above 10
         justnumbers = []
         for move in movestrengths:
             #print(move)
             justnumbers.append(copy(move))
         
         print(justnumbers)
-        #print(board_version_moves)
         random.shuffle(justnumbers) #so if a couple have the same value, we'll get a random one of the best, since max takes the first occurrence of that value
         move = board_version_moves[justnumbers.index(max(justnumbers))]
-        print("move selection complete.",move)
+        print("move selection complete.")
         return move
     
-    #output turn count and board to a text file
         
     
     
