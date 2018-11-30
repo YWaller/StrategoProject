@@ -45,7 +45,7 @@ Cleaning the code up. SAI has been cleaned up a lot now, but the code everywhere
 
 Calculating the various move strengths in parallel. I'm currently working on this; it would save a ton of time.
 
-The biggest bug is a strange one; 3/4ths of the way through a game (or at any time, really) the game can crash with an odd index error. I have thus far been unable to reproduce it.
+The biggest bug is a strange one; 3/4ths of the way through a game (or at any time, really) the game can crash with an odd index error (it's in getboards). I have thus far been unable to reproduce it reliably.
 
 # Miscellaneous notes
 If you'd like to hide the opponent's pieces, then there's a line in mainwithai.py that has the switch. I have this feature off right now while I figure things out and do testing. CTRL+F "hidden" and it should be in about line 328, just uncomment out that line, and the same one about 9 lines later also needs to be uncommented. The lines directly after them then need to be commented out. It'll make sense when you see it (I hope).
