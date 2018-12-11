@@ -8,6 +8,8 @@ Anyways, what it can do right now... you have a full graphical interface, and an
 # How to Run
 To run the game, you of course need all the files here. Open up mainwithai.py and run it. It may take a moment (more like several moments), the AI goes first. You can change that somewhere in mainwithai.
 
+You're gonna need functional keras, functional tensorflow... however you want to get those. Don't think it requires a specific version.
+
 # File Structure
 As you've read, mainwithai is how you start the game. That file contains the actual game engine, written with pygame. It handles all the movement and such.
 
